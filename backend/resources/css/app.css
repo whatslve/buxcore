@@ -1,0 +1,7 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/forms";
+@theme {
+    --color-graphite: #3BC0C3;       /* пример: slate-800 */
+    --color-mint: #1A2942;       /* пример: emerald-200 */
+    /* можешь задавать в oklch/hsl/hex — как удобно */
+}

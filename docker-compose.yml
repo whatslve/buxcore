@@ -1,0 +1,63 @@
+version: '3.9'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: buxcore_app
+    restart: unless-stopped
+    working_dir: /var/www/backend
+    volumes:
+      - ./backend:/var/www/backend
+    ports:
+      - "5173:5173" # для Vite dev-сервера
+    env_file:
+      - .env
+    networks:
+      - buxcore
+
+  nginx:
+    image: nginx:alpine
+    container_name: buxcore_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./backend:/var/www/backend
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - app
+    networks:
+      - buxcore
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: buxcore_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - buxcore_postgres:/var/lib/postgresql/data
+    networks:
+      - buxcore
+
+  redis:
+    image: redis:alpine
+    container_name: buxcore_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - buxcore
+
+networks:
+  buxcore:
+    driver: bridge
+
+volumes:
+  buxcore_postgres:
