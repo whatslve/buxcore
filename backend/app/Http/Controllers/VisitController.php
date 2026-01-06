@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Models\Visit;
+use App\Models\VisitsRecord;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
@@ -81,5 +82,12 @@ class VisitController extends Controller
         $visit->delete();
 
         return redirect()->route('adv.visits.index')->with('success', 'Visit deleted!');
+    }
+
+    public function finish(VisitsRecord $visitsRecord) {
+        $visitsRecord->finishVisit();
+        return response()->json([
+            'status' => 'visit finished',
+        ]);
     }
 }
