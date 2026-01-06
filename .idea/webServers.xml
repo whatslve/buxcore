@@ -9,6 +9,13 @@
           </advancedOptions>
         </fileTransfer>
       </webServer>
+      <webServer id="4dadb8db-1967-43a9-a135-6a7e31e4250b" name="prodvdsina">
+        <fileTransfer rootFolder="/home/buxcore/web/project" accessType="SFTP" host="144.124.250.197" port="22" sshConfigId="312904d7-3149-4123-a3e7-010fb0e3febf" sshConfig="root@144.124.250.197:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
     </option>
   </component>
 </project>
