@@ -89,7 +89,7 @@ watch(() => page.url, () => {
                 <span class="text-base font-semibold">Velonic</span>
             </Link>
 
-            <!-- right: bell + profile dropdown -->
+            <!-- right -->
             <div class="flex items-center gap-2">
                 <button class="rounded-md p-2 hover:bg-slate-100" aria-label="Уведомления">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -99,35 +99,41 @@ watch(() => page.url, () => {
 
                 <div class="relative">
                     <button class="flex items-center gap-2 rounded-md p-1.5 hover:bg-slate-100" @click="userMenuOpen = !userMenuOpen">
-                        <img :src="`https://i.pravatar.cc/64?u=${user?.email || 'user'}`" class="h-8 w-8 rounded-full" alt="user" />
+                        <img :src="`https://i.pravatar.cc/64?u=${user?.email || 'user'}`" class="h-8 w-8 rounded-full" />
                         <span class="hidden text-sm font-medium sm:inline">{{ user?.name }}</span>
                         <svg class="hidden h-4 w-4 sm:inline" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path :d="iconPath('chevron')" stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
                     </button>
 
-                    <!-- click-outside для дропа -->
                     <div v-show="userMenuOpen" class="fixed inset-0 z-40" @click="userMenuOpen=false"></div>
 
-                    <div v-show="userMenuOpen" class="absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-lg bg-white shadow-lg">
-                        <Link :href="route('profile.edit')" class="block px-4 py-2 text-sm hover:bg-slate-50">Profile</Link>
-                        <Link :href="route('logout')" method="post" as="button" class="block w-full px-4 py-2 text-left text-sm hover:bg-slate-50">
+                    <div v-show="userMenuOpen" class="absolute right-0 z-50 mt-2 w-48 rounded-lg bg-white shadow-lg">
+                        <Link :href="route('profile.edit')" class="block px-4 py-2 text-sm hover:bg-slate-50">
+                            Profile
+                        </Link>
+                        <Link :href="route('logout')" method="post" as="button"
+                              class="block w-full px-4 py-2 text-left text-sm hover:bg-slate-50">
                             Log Out
                         </Link>
                     </div>
                 </div>
             </div>
         </header>
-        <!-- DESKTOP aside (всегда виден) -->
-        <aside class="fixed inset-y-0 left-0 z-30 hidden w-60 overflow-y-auto bg-white p-4 shadow-md lg:block">
+
+        <!-- DESKTOP aside -->
+        <aside class="fixed inset-y-0 left-0 z-30 hidden w-60 bg-white p-4 shadow-md lg:block">
             <nav class="space-y-1">
                 <p class="mb-2 px-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Main</p>
 
                 <Link
-                    v-for="item in navMainFlat" :key="item.name"
+                    v-for="item in navMainFlat"
+                    :key="item.name"
                     :href="route(item.routeName)"
                     class="flex items-center gap-3 rounded-md px-3 py-2 text-sm"
-                    :class="isActive(item.routeName) ? 'bg-slate-100 font-medium text-slate-900 shadow-sm' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
+                    :class="isActive(item.routeName)
+                        ? 'bg-slate-100 font-medium text-slate-900 shadow-sm'
+                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
                 >
                     <svg class="h-5 w-5 opacity-70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path :d="iconPath(item.icon)" stroke-linecap="round" stroke-linejoin="round" />
@@ -135,35 +141,38 @@ watch(() => page.url, () => {
                     {{ item.name }}
                 </Link>
 
-                <!-- Вложенная группа -->
+                <!-- CABINET GROUP -->
                 <div class="rounded-md">
                     <button
                         class="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm"
-                        :class="[
-              advGroup.children.some(c => isActive(c.routeName))
-                ? 'bg-slate-100 text-slate-900 font-medium shadow-sm'
-                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-            ]"
-                        @click="expanded.adv = !expanded.adv"
+                        :class="cabinetGroup.children.some(c => isActive(c.routeName))
+                            ? 'bg-slate-100 text-slate-900 font-medium shadow-sm'
+                            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
+                        @click="expanded.cabinet = !expanded.cabinet"
                     >
-            <span class="flex items-center gap-3">
-              <svg class="h-5 w-5 opacity-70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path :d="iconPath(advGroup.icon)" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-              {{ advGroup.title }}
-            </span>
-                        <svg class="h-4 w-4 transition" :class="{ 'rotate-180': expanded.adv }" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <span class="flex items-center gap-3">
+                            <svg class="h-5 w-5 opacity-70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path :d="iconPath(cabinetGroup.icon)" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            {{ cabinetGroup.title }}
+                        </span>
+
+                        <svg class="h-4 w-4 transition"
+                             :class="{ 'rotate-180': expanded.cabinet }"
+                             fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path :d="iconPath('chevron')" stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
                     </button>
 
-                    <transition name="fade" mode="out-in">
-                        <ul v-show="expanded.adv" class="ml-9 space-y-1 py-1">
-                            <li v-for="child in advGroup.children" :key="child.name">
+                    <transition name="fade">
+                        <ul v-show="expanded.cabinet" class="ml-9 space-y-1 py-1">
+                            <li v-for="child in cabinetGroup.children" :key="child.name">
                                 <Link
                                     :href="route(child.routeName)"
                                     class="block rounded-md px-3 py-1.5 text-sm"
-                                    :class="isActive(child.routeName) ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
+                                    :class="isActive(child.routeName)
+                                        ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm'
+                                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
                                 >
                                     {{ child.name }}
                                 </Link>
@@ -174,103 +183,13 @@ watch(() => page.url, () => {
             </nav>
         </aside>
 
-        <!-- MOBILE drawer container: overlay + aside; клики по свободной зоне закрывают меню -->
-        <div v-show="sidebarOpen" class="fixed inset-0 z-40 flex lg:hidden">
-            <!-- сам aside -->
-            <aside
-                class="relative w-60 max-w-[80%] -translate-x-full transform bg-white p-4 shadow-lg transition-transform duration-200"
-                :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-            >
-                <!-- кнопка закрытия внутри aside -->
-                <div class="mb-2 flex items-center justify-between">
-                    <span class="px-2 text-sm font-semibold text-slate-600">Меню</span>
-                    <button class="rounded-md p-2 hover:bg-slate-100" aria-label="Закрыть" @click="closeSidebar">
-                        <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path :d="iconPath('close')" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
-                    </button>
-                </div>
-
-                <nav class="space-y-1">
-                    <p class="mb-2 px-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Main</p>
-
-                    <Link
-                        v-for="item in navMainFlat" :key="item.name"
-                        :href="route(item.routeName)"
-                        class="flex items-center gap-3 rounded-md px-3 py-2 text-sm"
-                        :class="isActive(item.routeName) ? 'bg-slate-100 font-medium text-slate-900 shadow-sm' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
-                        @click="closeSidebar"
-                    >
-                        <svg class="h-5 w-5 opacity-70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path :d="iconPath(item.icon)" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
-                        {{ item.name }}
-                    </Link>
-
-                    <!-- Вложенная группа -->
-                    <div class="rounded-md">
-                        <button
-                            class="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm"
-                            :class="[
-                advGroup.children.some(c => isActive(c.routeName))
-                  ? 'bg-slate-100 text-slate-900 font-medium shadow-sm'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-              ]"
-                            @click="expanded.adv = !expanded.adv"
-                        >
-              <span class="flex items-center gap-3">
-                <svg class="h-5 w-5 opacity-70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path :d="iconPath(advGroup.icon)" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-                {{ advGroup.title }}
-              </span>
-                            <svg class="h-4 w-4 transition" :class="{ 'rotate-180': expanded.adv }" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path :d="iconPath('chevron')" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                        </button>
-
-                        <transition name="fade" mode="out-in">
-                            <ul v-show="expanded.adv" class="ml-9 space-y-1 py-1">
-                                <li v-for="child in advGroup.children" :key="child.name">
-                                    <Link
-                                        :href="route(child.routeName)"
-                                        class="block rounded-md px-3 py-1.5 text-sm"
-                                        :class="isActive(child.routeName) ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
-                                        @click="closeSidebar"
-                                    >
-                                        {{ child.name }}
-                                    </Link>
-                                </li>
-                            </ul>
-                        </transition>
-                    </div>
-                </nav>
-            </aside>
-            <!-- свободная зона -->
-            <div class="flex-1 bg-slate-900/40" @click="closeSidebar"></div>
-        </div>
-
         <!-- Content -->
         <main class="pt-4 lg:ml-60">
-            <header v-if="$slots.header" class="bg-white shadow">
-                <div class="px-3 py-4 sm:px-6 lg:px-8">
-                    <slot name="header" />
-                </div>
-            </header>
-
-            <div v-if="flash.success" class="mx-3 mt-3 rounded bg-green-50 px-4 py-2 text-sm text-green-800 shadow sm:mx-6 lg:mx-8">
-                {{ flash.success }}
-            </div>
-            <div v-if="flash.error" class="mx-3 mt-3 rounded bg-red-50 px-4 py-2 text-sm text-red-700 shadow sm:mx-6 lg:mx-8">
-                {{ flash.error }}
-            </div>
-
-            <div class="px-3 py-4 sm:px-6 lg:px-8">
-                <slot />
-            </div>
+            <slot />
         </main>
     </div>
 </template>
+
 
 <style>
 .fade-enter-active, .fade-leave-active { transition: opacity .15s ease; }
