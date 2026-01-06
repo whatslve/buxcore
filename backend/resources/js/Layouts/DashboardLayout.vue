@@ -1,6 +1,6 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
-import { Link, usePage } from '@inertiajs/vue3'
+import {ref, computed, onMounted, watch} from 'vue'
+import {Link, usePage} from '@inertiajs/vue3'
 
 // Inertia props
 const page = usePage()
@@ -10,12 +10,12 @@ const flash = computed(() => page.props.flash ?? {})
 // UI state
 const sidebarOpen = ref(false)
 const userMenuOpen = ref(false)
-const expanded = ref({ cabinet: false })
+const expanded = ref({cabinet: false})
 
 // Главные пункты
 const navMainFlat = [
-    { name: 'Dashboard', routeName: 'dashboard', icon: 'grid' },
-    { name: 'Просмотры', routeName: 'visits', icon: 'eye' },
+    {name: 'Dashboard', routeName: 'dashboard', icon: 'grid'},
+    {name: 'Просмотры', routeName: 'visits', icon: 'eye'},
 ]
 
 // Вложенная группа «Кабинет»
@@ -24,9 +24,9 @@ const cabinetGroup = {
     title: 'Кабинет',
     icon: 'briefcase',
     children: [
-        { name: 'Настройки', routeName: 'cabinet.dashboard' },
-        { name: 'Просмотры', routeName: 'cabinet.visits.index' },
-        { name: 'Editable Tables', routeName: 'dashboard' },
+        {name: 'Настройки', routeName: 'cabinet.dashboard'},
+        {name: 'Просмотры', routeName: 'cabinet.visits.index'},
+        {name: 'Editable Tables', routeName: 'dashboard'},
     ],
 }
 
@@ -45,7 +45,11 @@ const toggleSidebar = () => (sidebarOpen.value = !sidebarOpen.value)
 const closeSidebar = () => (sidebarOpen.value = false)
 
 const isActive = (name) => {
-    try { return route().current(name) } catch { return false }
+    try {
+        return route().current(name)
+    } catch {
+        return false
+    }
 }
 
 const syncExpandedWithRoute = () => {
@@ -71,7 +75,6 @@ watch(() => page.url, () => {
 </script>
 
 
-
 <template>
     <div class="min-h-screen bg-slate-50 text-slate-800">
         <!-- Topbar -->
@@ -79,13 +82,15 @@ watch(() => page.url, () => {
             <!-- burger / close (mobile) -->
             <button class="rounded-md p-2 hover:bg-slate-100 lg:hidden" aria-label="Меню" @click="toggleSidebar">
                 <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path :d="sidebarOpen ? iconPath('close') : iconPath('burger')" stroke-linecap="round" stroke-linejoin="round" />
+                    <path :d="sidebarOpen ? iconPath('close') : iconPath('burger')" stroke-linecap="round"
+                          stroke-linejoin="round"/>
                 </svg>
             </button>
 
             <!-- brand -->
             <Link :href="route('dashboard')" class="flex items-center gap-2">
-                <span class="inline-flex h-8 w-8 items-center justify-center rounded bg-blue-600 text-white font-semibold">V</span>
+                <span
+                    class="inline-flex h-8 w-8 items-center justify-center rounded bg-blue-600 text-white font-semibold">V</span>
                 <span class="text-base font-semibold">Velonic</span>
             </Link>
 
@@ -93,16 +98,18 @@ watch(() => page.url, () => {
             <div class="flex items-center gap-2">
                 <button class="rounded-md p-2 hover:bg-slate-100" aria-label="Уведомления">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path :d="iconPath('bell')" stroke-linecap="round" stroke-linejoin="round" />
+                        <path :d="iconPath('bell')" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                 </button>
 
                 <div class="relative">
-                    <button class="flex items-center gap-2 rounded-md p-1.5 hover:bg-slate-100" @click="userMenuOpen = !userMenuOpen">
-                        <img :src="`https://i.pravatar.cc/64?u=${user?.email || 'user'}`" class="h-8 w-8 rounded-full" />
+                    <button class="flex items-center gap-2 rounded-md p-1.5 hover:bg-slate-100"
+                            @click="userMenuOpen = !userMenuOpen">
+                        <img :src="`https://i.pravatar.cc/64?u=${user?.email || 'user'}`" class="h-8 w-8 rounded-full"/>
                         <span class="hidden text-sm font-medium sm:inline">{{ user?.name }}</span>
-                        <svg class="hidden h-4 w-4 sm:inline" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path :d="iconPath('chevron')" stroke-linecap="round" stroke-linejoin="round" />
+                        <svg class="hidden h-4 w-4 sm:inline" fill="none" stroke="currentColor" stroke-width="2"
+                             viewBox="0 0 24 24">
+                            <path :d="iconPath('chevron')" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                     </button>
 
@@ -135,8 +142,9 @@ watch(() => page.url, () => {
                         ? 'bg-slate-100 font-medium text-slate-900 shadow-sm'
                         : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
                 >
-                    <svg class="h-5 w-5 opacity-70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path :d="iconPath(item.icon)" stroke-linecap="round" stroke-linejoin="round" />
+                    <svg class="h-5 w-5 opacity-70" fill="none" stroke="currentColor" stroke-width="2"
+                         viewBox="0 0 24 24">
+                        <path :d="iconPath(item.icon)" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     {{ item.name }}
                 </Link>
@@ -151,8 +159,9 @@ watch(() => page.url, () => {
                         @click="expanded.cabinet = !expanded.cabinet"
                     >
                         <span class="flex items-center gap-3">
-                            <svg class="h-5 w-5 opacity-70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path :d="iconPath(cabinetGroup.icon)" stroke-linecap="round" stroke-linejoin="round" />
+                            <svg class="h-5 w-5 opacity-70" fill="none" stroke="currentColor" stroke-width="2"
+                                 viewBox="0 0 24 24">
+                                <path :d="iconPath(cabinetGroup.icon)" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                             {{ cabinetGroup.title }}
                         </span>
@@ -160,7 +169,7 @@ watch(() => page.url, () => {
                         <svg class="h-4 w-4 transition"
                              :class="{ 'rotate-180': expanded.cabinet }"
                              fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path :d="iconPath('chevron')" stroke-linecap="round" stroke-linejoin="round" />
+                            <path :d="iconPath('chevron')" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                     </button>
 
@@ -185,13 +194,20 @@ watch(() => page.url, () => {
 
         <!-- Content -->
         <main class="pt-4 lg:ml-60">
-            <slot />
+            <div class="px-4 sm:px-6 lg:px-8 py-4">
+                <slot/>
+            </div>
         </main>
     </div>
 </template>
 
 
 <style>
-.fade-enter-active, .fade-leave-active { transition: opacity .15s ease; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
+.fade-enter-active, .fade-leave-active {
+    transition: opacity .15s ease;
+}
+
+.fade-enter-from, .fade-leave-to {
+    opacity: 0;
+}
 </style>
