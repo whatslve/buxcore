@@ -17,7 +17,7 @@ defineProps({
         <div class="pb-12">
             <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    <Link :href="route('adv.visits.create')"
+                    <Link :href="route('cabinet.visits.create')"
                           class="inline-flex items-center gap-2 ml-2 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
@@ -63,7 +63,7 @@ defineProps({
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
                                 <Link
-                                    :href="route('adv.visits.edit', visit.id)"
+                                    :href="route('cabinet.visits.edit', visit.id)"
                                     class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                                 >
                                     Редактировать

@@ -5,6 +5,8 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\VisitController;
+use App\Http\Controllers\UserWorks;
+
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -14,33 +16,74 @@ Route::get('/', function () {
     ]);
 });
 
+/*
+|--------------------------------------------------------------------------
+| Dashboard
+|--------------------------------------------------------------------------
+*/
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
-Route::get('/visits',[\App\Http\Controllers\UserWorks::class, 'visits'])->middleware(['auth', 'verified'])->name('visits');
-Route::get('/adv_dashboard', function () {
+
+/*
+|--------------------------------------------------------------------------
+| User visits
+|--------------------------------------------------------------------------
+*/
+Route::get('/visits', [UserWorks::class, 'visits'])
+    ->middleware(['auth', 'verified'])
+    ->name('visits');
+
+Route::get('/visits/{visit}/perform', [UserWorks::class, 'performView'])
+    ->middleware('auth')
+    ->name('visits.perform');
+
+/*
+|--------------------------------------------------------------------------
+| Cabinet (ex Adv)
+|--------------------------------------------------------------------------
+*/
+Route::get('/cabinet', function () {
     return Inertia::render('Adv_dashboard');
-})->middleware(['auth', 'verified'])->name('adv_dashboard');
-
-Route::middleware(['auth'])->group(function () {
-    Route::get('visits/{visit}/perform', [\App\Http\Controllers\UserWorks::class, 'performView'])->name('visits.perform');
-
-    Route::get('adv/visits', [VisitController::class, 'index'])->name('adv.visits.index');
-    Route::get('adv/visits/create', [VisitController::class, 'create'])->name('adv.visits.create');
-    Route::post('adv/visits', [VisitController::class, 'store'])->name('adv.visits.store');
-    Route::get('adv/visits/{visit}/edit', [VisitController::class, 'edit'])->name('adv.visits.edit');
-    Route::put('adv/visits/{visit}/update', [VisitController::class, 'update'])->name('adv.visits.update');
-});
-
+})->middleware(['auth', 'verified'])->name('cabinet.dashboard');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/cabinet/visits', [VisitController::class, 'index'])
+        ->name('cabinet.visits.index');
+
+    Route::get('/cabinet/visits/create', [VisitController::class, 'create'])
+        ->name('cabinet.visits.create');
+
+    Route::post('/cabinet/visits', [VisitController::class, 'store'])
+        ->name('cabinet.visits.store');
+
+    Route::get('/cabinet/visits/{visit}/edit', [VisitController::class, 'edit'])
+        ->name('cabinet.visits.edit');
+
+    Route::put('/cabinet/visits/{visit}', [VisitController::class, 'update'])
+        ->name('cabinet.visits.update');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Finish visit record (AJAX)
+|--------------------------------------------------------------------------
+*/
 Route::post(
     '/visits-records/{visitsRecord}/finish',
     [VisitController::class, 'finish']
 )->middleware('auth')
     ->name('visits-records.finish');
-require __DIR__.'/auth.php';
+
+/*
+|--------------------------------------------------------------------------
+| Profile
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+require __DIR__ . '/auth.php';

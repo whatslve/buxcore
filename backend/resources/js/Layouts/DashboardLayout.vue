@@ -8,25 +8,25 @@ const user = computed(() => page.props.auth?.user ?? {})
 const flash = computed(() => page.props.flash ?? {})
 
 // UI state
-const sidebarOpen = ref(false)     // mobile drawer state
-const userMenuOpen = ref(false)    // profile dropdown
-const expanded = ref({ adv: false })
+const sidebarOpen = ref(false)
+const userMenuOpen = ref(false)
+const expanded = ref({ cabinet: false })
 
-// Главные пункты (без вложенности)
+// Главные пункты
 const navMainFlat = [
     { name: 'Dashboard', routeName: 'dashboard', icon: 'grid' },
     { name: 'Просмотры', routeName: 'visits', icon: 'eye' },
 ]
 
-// Вложенная группа «Кабинет рекламодателя»
-const advGroup = {
-    key: 'adv',
-    title: 'Кабинет рекламодателя',
+// Вложенная группа «Кабинет»
+const cabinetGroup = {
+    key: 'cabinet',
+    title: 'Кабинет',
     icon: 'briefcase',
     children: [
-        { name: 'Настройки', routeName: 'adv_dashboard' },
-        { name: 'Просмотры', routeName: 'adv.visits.index' },
-        { name: 'Editable Tables', routeName: 'dashboard' }, // пример
+        { name: 'Настройки', routeName: 'cabinet.dashboard' },
+        { name: 'Просмотры', routeName: 'cabinet.visits.index' },
+        { name: 'Editable Tables', routeName: 'dashboard' },
     ],
 }
 
@@ -49,7 +49,9 @@ const isActive = (name) => {
 }
 
 const syncExpandedWithRoute = () => {
-    expanded.value.adv = advGroup.children.some(c => isActive(c.routeName))
+    expanded.value.cabinet = cabinetGroup.children.some(c =>
+        isActive(c.routeName)
+    )
 }
 
 onMounted(() => {
@@ -64,9 +66,11 @@ onMounted(() => {
 
 watch(() => page.url, () => {
     syncExpandedWithRoute()
-    closeSidebar() // на мобиле закрываем drawer после перехода
+    closeSidebar()
 })
 </script>
+
+
 
 <template>
     <div class="min-h-screen bg-slate-50 text-slate-800">

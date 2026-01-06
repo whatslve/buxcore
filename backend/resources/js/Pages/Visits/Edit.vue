@@ -28,7 +28,7 @@ const form = useForm({
 })
 
 const submit = () => {
-    form.put(route('adv.visits.update', props.visit.id), {
+    form.put(route('cabinet.visits.update', props.visit.id), {
         preserveScroll: true,
     })
 }
@@ -43,7 +43,7 @@ const submit = () => {
             <div class="p-6">
                 <div class="mb-6 flex items-center justify-between">
                     <Link
-                        :href="route('adv.visits.index')"
+                        :href="route('cabinet.visits.index')"
                         class="rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
                     >
                         ← Назад к списку
@@ -230,7 +230,7 @@ const submit = () => {
                         </button>
 
                         <Link
-                            :href="route('adv.visits.index')"
+                            :href="route('cabinet.visits.index')"
                             class="text-sm text-gray-600 hover:text-gray-800"
                         >
                             Отмена

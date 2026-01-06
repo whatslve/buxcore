@@ -30,7 +30,7 @@ const form = useForm({
             <div class="max-w-3xl mx-auto py-8">
                 <h1 class="text-2xl font-semibold mb-6">Create Visit</h1>
 
-                <form @submit.prevent="form.post(route('adv.visits.store'))" class="space-y-6">
+                <form @submit.prevent="form.post(route('cabinet.visits.store'))" class="space-y-6">
                     <!-- Title -->
                     <div>
                         <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
