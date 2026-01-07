@@ -4,11 +4,15 @@ import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import RecaptchaV2 from '@/Components/GRecaptcha.vue'
 
+/** props от Inertia */
 const props = defineProps({
     link: { type: String, required: true },
     time: { type: Number, required: true },
     visit_id: { type: Number, required: true },
 })
+
+/** reCAPTCHA site key из Vite */
+const siteKey = import.meta.env.VITE_G_RECAPTCHA_SITE_KEY || ''
 
 /** Таймер */
 const timer = ref(props.time)
@@ -23,6 +27,7 @@ const isSubmitting = ref(false)
 const submitError = ref('')
 const submitOk = ref(false)
 
+/** Запуск таймера */
 onMounted(() => {
     const interval = setInterval(() => {
         if (timer.value > 0) {
@@ -34,6 +39,7 @@ onMounted(() => {
     }, 1000)
 })
 
+/** reCAPTCHA callbacks */
 function onVerified(token) {
     recaptchaToken.value = token
     submitToBackend()
@@ -47,6 +53,7 @@ function onError() {
     submitError.value = 'Ошибка reCAPTCHA. Попробуйте ещё раз.'
 }
 
+/** Отправка на backend */
 async function submitToBackend() {
     if (!recaptchaToken.value) return
 
@@ -55,7 +62,7 @@ async function submitToBackend() {
     submitOk.value = false
 
     try {
-        const { data } = await axios.post('/visit/finish', {
+        await axios.post('/visit/finish', {
             token: recaptchaToken.value,
             visit_id: props.visit_id,
         })
@@ -63,11 +70,9 @@ async function submitToBackend() {
         submitOk.value = true
         showCaptcha.value = false
         captchaRef.value?.reset?.()
-
     } catch (err) {
         submitError.value =
-            err?.response?.data?.message ||
-            'Не удалось отправить запрос'
+            err?.response?.data?.message || 'Не удалось отправить запрос'
         captchaRef.value?.reset?.()
         recaptchaToken.value = ''
     } finally {
@@ -83,7 +88,7 @@ async function submitToBackend() {
         <!-- Таймер -->
         <div
             v-if="timer > 0"
-            class="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-black/70 text-white px-4 py-2 rounded-lg font-bold"
+            class="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-black/70 text-white px-4 py-2 rounded-lg font-bold pointer-events-none"
         >
             {{ timer }} сек
         </div>
@@ -97,7 +102,7 @@ async function submitToBackend() {
 
         <!-- reCAPTCHA -->
         <div
-            v-if="showCaptcha"
+            v-if="showCaptcha && siteKey"
             class="absolute inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
         >
             <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-lg">
@@ -107,7 +112,7 @@ async function submitToBackend() {
 
                 <RecaptchaV2
                     ref="captchaRef"
-                    :siteKey="$page.props.recaptcha.site_key"
+                    :siteKey="siteKey"
                     @verified="onVerified"
                     @expired="onExpired"
                     @error="onError"
@@ -123,6 +128,14 @@ async function submitToBackend() {
                     Отправка…
                 </p>
             </div>
+        </div>
+
+        <!-- если вдруг ключа нет -->
+        <div
+            v-if="showCaptcha && !siteKey"
+            class="absolute inset-0 z-50 bg-black/60 flex items-center justify-center text-white"
+        >
+            reCAPTCHA не настроена
         </div>
     </div>
 </template>
