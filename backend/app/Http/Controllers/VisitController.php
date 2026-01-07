@@ -43,7 +43,7 @@ class VisitController extends Controller
 
         $request->user()->visits()->create($validated);
 
-        return redirect()->route('adv.visits.index')->with('success', 'Visit created!');
+        return redirect()->route('cabinet.visits.index')->with('success', 'Visit created!');
     }
 
     public function edit(Visit $visit)
@@ -73,7 +73,7 @@ class VisitController extends Controller
 
         $visit->update($validated);
 
-        return redirect()->route('adv.visits.index')->with('success', 'Visit updated!');
+        return redirect()->route('cabinet.visits.index')->with('success', 'Visit updated!');
     }
 
     public function destroy(Visit $visit)
@@ -81,7 +81,7 @@ class VisitController extends Controller
         $this->authorize('delete', $visit); // опционально
         $visit->delete();
 
-        return redirect()->route('adv.visits.index')->with('success', 'Visit deleted!');
+        return redirect()->route('cabinet.visits.index')->with('success', 'Visit deleted!');
     }
 
     public function finish(VisitsRecord $visitsRecord) {
