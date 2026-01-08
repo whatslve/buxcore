@@ -13,7 +13,7 @@ const props = defineProps({
 
 /** reCAPTCHA site key из Vite */
 const siteKey = import.meta.env.VITE_G_RECAPTCHA_SITE_KEY || ''
-
+console.log(siteKey);
 /** Таймер */
 const timer = ref(props.time)
 const showCaptcha = ref(false)
