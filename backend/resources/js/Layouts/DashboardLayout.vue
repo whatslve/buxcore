@@ -67,11 +67,6 @@ onMounted(() => {
     })
     syncExpandedWithRoute()
 })
-
-watch(() => page.url, () => {
-    syncExpandedWithRoute()
-    closeSidebar()
-})
 </script>
 
 
