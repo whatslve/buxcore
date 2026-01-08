@@ -41,7 +41,7 @@ function loadRecaptcha() {
         script.src = `https://www.google.com/recaptcha/api.js?render=${siteKey}`
         script.async = true
         script.defer = true
-        script.onload = executeRecaptcha
+        script.onload = () => executeRecaptcha()
         document.head.appendChild(script)
     } else {
         executeRecaptcha()
@@ -51,9 +51,13 @@ function loadRecaptcha() {
 // Генерация токена v3
 async function executeRecaptcha() {
     try {
-        recaptchaToken.value = await window.grecaptcha.execute(siteKey, { action: 'visit' })
+        await window.grecaptcha.ready()
+        const token = await window.grecaptcha.execute(siteKey, { action: 'visit' })
+        if (!token) throw new Error('Пустой токен reCAPTCHA')
+        recaptchaToken.value = token
         submitToBackend()
     } catch (err) {
+        console.error('reCAPTCHA error', err)
         submitError.value = 'Ошибка reCAPTCHA. Попробуйте ещё раз.'
     }
 }
@@ -78,26 +82,45 @@ async function submitToBackend() {
         isSubmitting.value = false
     }
 }
+
+// Повторная проверка (если ошибка)
+function retryCaptcha() {
+    submitError.value = ''
+    recaptchaToken.value = ''
+    executeRecaptcha()
+}
 </script>
 
 <template>
     <Head title="Посещение" />
     <div class="w-screen h-screen relative">
+        <!-- Таймер -->
         <div v-if="timer > 0" class="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-black/70 text-white px-4 py-2 rounded-lg font-bold pointer-events-none">
             {{ timer }} сек
         </div>
 
+        <!-- Основной iframe -->
         <iframe :src="link" class="w-full h-full border-0" allowfullscreen></iframe>
 
+        <!-- reCAPTCHA overlay -->
         <div v-if="showCaptcha && siteKey" class="absolute inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
             <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-lg text-center">
                 <h2 class="text-xl font-semibold mb-4">Подтвердите, что вы не робот</h2>
+
                 <p v-if="submitError" class="mt-4 text-sm text-red-600">{{ submitError }}</p>
                 <p v-if="submitOk" class="mt-4 text-sm text-green-600">Проверка пройдена</p>
                 <p v-if="isSubmitting" class="mt-4 text-sm text-gray-500">Отправка…</p>
+
+                <button
+                    v-if="submitError && !isSubmitting"
+                    @click="retryCaptcha"
+                    class="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                    Повторить проверку
+                </button>
             </div>
         </div>
 
+        <!-- Overlay если ключ не настроен -->
         <div v-if="showCaptcha && !siteKey" class="absolute inset-0 z-50 bg-black/60 flex items-center justify-center text-white">
             reCAPTCHA не настроена
         </div>

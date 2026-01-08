@@ -85,16 +85,8 @@ class VisitController extends Controller
         return redirect()->route('cabinet.visits.index')->with('success', 'Visit deleted!');
     }
 
-    public function finish(Request $request, VisitsRecord $visitsRecord)
+    public function finish(VisitsRecord $visitsRecord, Request $request)
     {
-        // Логируем входящий запрос
-        \Log::debug('Finish visit request', [
-            'visit_id' => $visitsRecord->id,
-            'request_data' => $request->all(),
-            'user_id' => Auth::id(),
-        ]);
-
-        // Проверка наличия токена
         $request->validate([
             'token' => 'required|string',
         ]);
@@ -102,53 +94,48 @@ class VisitController extends Controller
         $token = $request->input('token');
         $secret = config('services.recaptcha.secret');
 
-        // Логируем секрет (можно убрать потом)
-        \Log::debug('reCAPTCHA secret used', ['secret' => $secret]);
+        if (empty($secret)) {
+            \Log::warning('reCAPTCHA secret not configured');
+            return response()->json(['message' => 'reCAPTCHA not configured'], 500);
+        }
 
         try {
             $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
                 'secret' => $secret,
                 'response' => $token,
-                // 'remoteip' => $request->ip(),
+                'remoteip' => $request->ip(),
             ]);
+
+            if (! $response->successful()) {
+                \Log::error('reCAPTCHA verify http error', ['status' => $response->status(), 'body' => $response->body()]);
+                return response()->json(['message' => 'Error verifying reCAPTCHA'], 500);
+            }
 
             $body = $response->json();
 
-            // Логируем ответ Google
-            \Log::debug('reCAPTCHA response', $body ?: []);
+            // Логируйте только полезные вещи (без секрета)
+            \Log::debug('reCAPTCHA response', ['success' => $body['success'] ?? false, 'score' => $body['score'] ?? null, 'action' => $body['action'] ?? null]);
 
             if (empty($body['success'])) {
-                return response()->json([
-                    'message' => 'reCAPTCHA verification failed',
-                    'detail' => $body
-                ], 422);
+                return response()->json(['message' => 'reCAPTCHA verification failed', 'detail' => $body], 422);
             }
 
-            if (($body['score'] ?? 0) < 0.5) {
-                return response()->json([
-                    'message' => 'reCAPTCHA score too low',
-                    'score' => $body['score'] ?? null
-                ], 422);
+            // Опционально проверяем action
+            if (($body['action'] ?? '') !== 'visit') {
+                return response()->json(['message' => 'reCAPTCHA action mismatch', 'action' => $body['action'] ?? null], 422);
             }
 
-            // Всё ок — завершаем визит
+            $threshold = config('services.recaptcha.threshold', 0.4); // задайте в config/services.php или .env
+            if (($body['score'] ?? 0) < $threshold) {
+                return response()->json(['message' => 'reCAPTCHA score too low', 'score' => $body['score'] ?? null], 422);
+            }
+
             $visitsRecord->finishVisit();
 
-            return response()->json([
-                'status' => 'visit finished',
-                'recaptcha_score' => $body['score'] ?? null,
-            ]);
+            return response()->json(['status' => 'visit finished', 'recaptcha_score' => $body['score'] ?? null]);
         } catch (\Exception $e) {
-            // Логируем ошибку, если запрос к Google упал
-            \Log::error('reCAPTCHA request failed', [
-                'error' => $e->getMessage(),
-            ]);
-
-            return response()->json([
-                'message' => 'Error verifying reCAPTCHA',
-                'error' => $e->getMessage(),
-            ], 500);
+            \Log::error('reCAPTCHA request failed', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Error verifying reCAPTCHA', 'error' => $e->getMessage()], 500);
         }
     }
-
 }
