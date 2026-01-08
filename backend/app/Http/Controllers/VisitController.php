@@ -87,6 +87,14 @@ class VisitController extends Controller
 
     public function finish(Request $request, VisitsRecord $visitsRecord)
     {
+        // Логируем входящий запрос
+        \Log::debug('Finish visit request', [
+            'visit_id' => $visitsRecord->id,
+            'request_data' => $request->all(),
+            'user_id' => Auth::id(),
+        ]);
+
+        // Проверка наличия токена
         $request->validate([
             'token' => 'required|string',
         ]);
@@ -94,26 +102,53 @@ class VisitController extends Controller
         $token = $request->input('token');
         $secret = config('services.recaptcha.secret');
 
-        $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
-            'secret' => $secret,
-            'response' => $token,
-        ]);
+        // Логируем секрет (можно убрать потом)
+        \Log::debug('reCAPTCHA secret used', ['secret' => $secret]);
 
-        $body = $response->json();
+        try {
+            $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+                'secret' => $secret,
+                'response' => $token,
+                // 'remoteip' => $request->ip(),
+            ]);
 
-        if (empty($body['success'])) {
-            return response()->json(['message' => 'reCAPTCHA verification failed', 'detail' => $body], 422);
+            $body = $response->json();
+
+            // Логируем ответ Google
+            \Log::debug('reCAPTCHA response', $body ?: []);
+
+            if (empty($body['success'])) {
+                return response()->json([
+                    'message' => 'reCAPTCHA verification failed',
+                    'detail' => $body
+                ], 422);
+            }
+
+            if (($body['score'] ?? 0) < 0.5) {
+                return response()->json([
+                    'message' => 'reCAPTCHA score too low',
+                    'score' => $body['score'] ?? null
+                ], 422);
+            }
+
+            // Всё ок — завершаем визит
+            $visitsRecord->finishVisit();
+
+            return response()->json([
+                'status' => 'visit finished',
+                'recaptcha_score' => $body['score'] ?? null,
+            ]);
+        } catch (\Exception $e) {
+            // Логируем ошибку, если запрос к Google упал
+            \Log::error('reCAPTCHA request failed', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'Error verifying reCAPTCHA',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-        if (($body['score'] ?? 0) < 0.5) {
-            return response()->json(['message' => 'reCAPTCHA score too low', 'score' => $body['score'] ?? null], 422);
-        }
-
-        $visitsRecord->finishVisit();
-
-        return response()->json([
-            'status' => 'visit finished',
-            'recaptcha_score' => $body['score'] ?? null,
-        ]);
     }
+
 }
