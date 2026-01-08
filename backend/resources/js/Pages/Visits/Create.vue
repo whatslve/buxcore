@@ -1,8 +1,7 @@
 <script setup>
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3'
-import NavLink from '@/Components/NavLink.vue';
 import DashboardLayout from "../../Layouts/DashboardLayout.vue";
+
 const form = useForm({
     title: '',
     description: '',
@@ -17,58 +16,78 @@ const form = useForm({
     max_views_per_day: 0,
     ip_filter: 'off',
 })
-
 </script>
 
 <template>
-    <Head title="Dashboard" />
-    <DashboardLayout>
-        <h1 class="mb-4 text-lg font-semibold">Задания просмотров</h1>
-        <div
-            class="overflow-hidden bg-white shadow-sm sm:rounded-lg"
-        >
-            <div class="max-w-3xl mx-auto py-8">
-                <h1 class="text-2xl font-semibold mb-6">Create Visit</h1>
+    <Head title="Create Visit" />
 
-                <form @submit.prevent="form.post(route('cabinet.visits.store'))" class="space-y-6">
+    <DashboardLayout>
+        <!-- header -->
+        <div class="flex items-center justify-between mb-4">
+            <h1 class="text-lg font-semibold">Задания просмотров</h1>
+
+            <!-- КНОПКА НАЗАД -->
+            <Link
+                :href="route('cabinet.visits.index')"
+                class="inline-flex items-center gap-2 rounded-md
+                       border border-gray-300 bg-white px-3 py-1.5
+                       text-sm font-medium text-gray-700
+                       hover:bg-gray-100"
+            >
+                ← Назад
+            </Link>
+        </div>
+
+        <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
+            <div class="max-w-3xl mx-auto py-8">
+                <h2 class="text-2xl font-semibold mb-6">Create Visit</h2>
+
+                <form
+                    @submit.prevent="form.post(route('cabinet.visits.store'))"
+                    class="space-y-6"
+                >
                     <!-- Title -->
                     <div>
-                        <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
-                        <input v-model="form.title" type="text" id="title"
+                        <label class="block text-sm font-medium text-gray-700">Title</label>
+                        <input v-model="form.title" type="text"
                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm
-                 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"/>
+                               focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"/>
                     </div>
 
                     <!-- Description -->
                     <div>
-                        <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-                        <textarea v-model="form.description" id="description" rows="3"
+                        <label class="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea v-model="form.description" rows="3"
                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm
-                 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+                                  focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
                     </div>
 
                     <!-- Frame -->
                     <div>
-                        <label for="frame" class="block text-sm font-medium text-gray-700">Frame</label>
-                        <input v-model.number="form.frame" type="number" id="frame" min="0"
+                        <label class="block text-sm font-medium text-gray-700">Frame</label>
+                        <input v-model.number="form.frame" type="number" min="0"
                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm
-                 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"/>
+                               focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"/>
                     </div>
 
                     <!-- Time -->
                     <div>
-                        <label for="time" class="block text-sm font-medium text-gray-700">Time (seconds)</label>
-                        <select v-model.number="form.time" id="time"
-                                class="mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                            <option v-for="t in [5,10,15,20,30,60,80,100]" :key="t" :value="t">{{ t }}</option>
+                        <label class="block text-sm font-medium text-gray-700">Time (seconds)</label>
+                        <select v-model.number="form.time"
+                                class="mt-1 block w-full rounded-md border-gray-300
+                                focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <option v-for="t in [5,10,15,20,30,60,80,100]" :key="t" :value="t">
+                                {{ t }}
+                            </option>
                         </select>
                     </div>
 
                     <!-- Status -->
                     <div>
-                        <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
-                        <select v-model="form.status" id="status"
-                                class="mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        <label class="block text-sm font-medium text-gray-700">Status</label>
+                        <select v-model="form.status"
+                                class="mt-1 block w-full rounded-md border-gray-300
+                                focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                             <option value="on">On</option>
                             <option value="off">Off</option>
                             <option value="ban">Ban</option>
@@ -77,65 +96,75 @@ const form = useForm({
 
                     <!-- Reward -->
                     <div>
-                        <label for="reward" class="block text-sm font-medium text-gray-700">Reward</label>
-                        <input v-model.number="form.reward" type="number" step="0.01" id="reward"
+                        <label class="block text-sm font-medium text-gray-700">Reward</label>
+                        <input v-model.number="form.reward" type="number" step="0.01"
                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm
-                 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"/>
+                               focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"/>
                     </div>
 
                     <!-- Cost -->
                     <div>
-                        <label for="cost" class="block text-sm font-medium text-gray-700">Cost</label>
-                        <input v-model.number="form.cost" type="number" step="0.01" id="cost"
+                        <label class="block text-sm font-medium text-gray-700">Cost</label>
+                        <input v-model.number="form.cost" type="number" step="0.01"
                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm
-                 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"/>
+                               focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"/>
                     </div>
 
                     <!-- Balance -->
                     <div>
-                        <label for="balance" class="block text-sm font-medium text-gray-700">Balance</label>
-                        <input v-model.number="form.balance" type="number" step="0.01" id="balance"
+                        <label class="block text-sm font-medium text-gray-700">Balance</label>
+                        <input v-model.number="form.balance" type="number" step="0.01"
                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm
-                 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"/>
+                               focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"/>
                     </div>
 
                     <!-- Link -->
                     <div>
-                        <label for="link" class="block text-sm font-medium text-gray-700">Link</label>
-                        <input v-model="form.link" type="url" id="link"
+                        <label class="block text-sm font-medium text-gray-700">Link</label>
+                        <input v-model="form.link" type="url"
                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm
-                 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"/>
+                               focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"/>
                     </div>
 
                     <!-- Max views per day -->
                     <div>
-                        <label for="max_views_per_day" class="block text-sm font-medium text-gray-700">Max views per day</label>
-                        <input v-model.number="form.max_views_per_day" type="number" min="0" id="max_views_per_day"
+                        <label class="block text-sm font-medium text-gray-700">
+                            Max views per day
+                        </label>
+                        <input v-model.number="form.max_views_per_day" type="number" min="0"
                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm
-                 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"/>
+                               focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"/>
                     </div>
 
                     <!-- IP filter -->
                     <div>
-                        <label for="ip_filter" class="block text-sm font-medium text-gray-700">IP Filter</label>
-                        <select v-model="form.ip_filter" id="ip_filter"
-                                class="mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        <label class="block text-sm font-medium text-gray-700">IP Filter</label>
+                        <select v-model="form.ip_filter"
+                                class="mt-1 block w-full rounded-md border-gray-300
+                                focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                             <option value="full">Full</option>
                             <option value="mask">Mask</option>
                             <option value="off">Off</option>
                         </select>
                     </div>
 
-                    <!-- Submit -->
-                    <div>
+                    <!-- Actions -->
+                    <div class="flex items-center gap-3">
                         <button type="submit"
-                                class="rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">
+                                class="rounded-md bg-indigo-600 px-4 py-2 text-white
+                                       hover:bg-indigo-700">
                             Save Visit
                         </button>
+
+                        <Link
+                            :href="route('cabinet.visits.index')"
+                            class="text-sm text-gray-600 hover:text-gray-900"
+                        >
+                            Cancel
+                        </Link>
                     </div>
                 </form>
             </div>
         </div>
-
     </DashboardLayout>
 </template>
