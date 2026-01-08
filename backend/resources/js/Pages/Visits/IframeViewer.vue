@@ -1,24 +1,21 @@
 <script setup>
-import { Head } from '@inertiajs/vue3'
 import { ref, onMounted } from 'vue'
+import { Head } from '@inertiajs/vue3'
 import axios from 'axios'
 
-/** props от Inertia */
+/** Props от Inertia */
 const props = defineProps({
     link: { type: String, required: true },
     time: { type: Number, required: true },
     visit_id: { type: Number, required: true },
 })
 
-/** reCAPTCHA site key из Vite */
-const siteKey = import.meta.env.VITE_G_RECAPTCHA_SITE_KEY || ''
-console.log('Site Key:', siteKey)
-
 /** Таймер */
 const timer = ref(props.time)
 const showCaptcha = ref(false)
 
-/** reCAPTCHA token */
+/** reCAPTCHA v3 */
+const siteKey = import.meta.env.VITE_G_RECAPTCHA_SITE_KEY || ''
 const recaptchaToken = ref('')
 
 /** UI */
@@ -26,7 +23,7 @@ const isSubmitting = ref(false)
 const submitError = ref('')
 const submitOk = ref(false)
 
-/** Таймер */
+/** Таймер запускается при монтировании */
 onMounted(() => {
     const interval = setInterval(() => {
         if (timer.value > 0) {
@@ -39,21 +36,15 @@ onMounted(() => {
     }, 1000)
 })
 
-/** Выполнение reCAPTCHA v3 */
+/** Вызов reCAPTCHA v3 */
 async function executeRecaptcha() {
     if (!siteKey) {
         submitError.value = 'reCAPTCHA не настроена'
         return
     }
 
-    if (!window.grecaptcha) {
-        submitError.value = 'reCAPTCHA не загружена'
-        return
-    }
-
     try {
-        const token = await window.grecaptcha.execute(siteKey, { action: 'visit' })
-        recaptchaToken.value = token
+        recaptchaToken.value = await window.grecaptcha.execute(siteKey, { action: 'visit' })
         submitToBackend()
     } catch (err) {
         submitError.value = 'Ошибка reCAPTCHA. Попробуйте ещё раз.'
@@ -73,12 +64,10 @@ async function submitToBackend() {
             token: recaptchaToken.value,
             visit_id: props.visit_id,
         })
-
         submitOk.value = true
         showCaptcha.value = false
     } catch (err) {
-        submitError.value =
-            err?.response?.data?.message || 'Не удалось отправить запрос'
+        submitError.value = err?.response?.data?.message || 'Не удалось отправить запрос'
         recaptchaToken.value = ''
     } finally {
         isSubmitting.value = false
@@ -103,29 +92,28 @@ async function submitToBackend() {
             :src="link"
             class="w-full h-full border-0"
             allowfullscreen
-        />
+        ></iframe>
 
-        <!-- Статус reCAPTCHA -->
+        <!-- reCAPTCHA overlay -->
         <div
-            v-if="showCaptcha && submitError"
-            class="absolute inset-0 z-50 bg-black/60 flex items-center justify-center p-4 text-white"
+            v-if="showCaptcha && siteKey"
+            class="absolute inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
         >
-            {{ submitError }}
+            <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-lg text-center">
+                <h2 class="text-xl font-semibold mb-4">Подтвердите, что вы не робот</h2>
+                <p v-if="submitError" class="mt-4 text-sm text-red-600">{{ submitError }}</p>
+                <p v-if="submitOk" class="mt-4 text-sm text-green-600">Проверка пройдена</p>
+                <p v-if="isSubmitting" class="mt-4 text-sm text-gray-500">Отправка…</p>
+            </div>
         </div>
+
         <div
-            v-if="submitOk"
-            class="absolute top-4 right-4 z-50 bg-green-600 text-white px-4 py-2 rounded-lg"
+            v-if="showCaptcha && !siteKey"
+            class="absolute inset-0 z-50 bg-black/60 flex items-center justify-center text-white"
         >
-            Проверка пройдена
-        </div>
-        <div
-            v-if="isSubmitting"
-            class="absolute top-4 right-4 z-50 bg-gray-600 text-white px-4 py-2 rounded-lg"
-        >
-            Отправка…
+            reCAPTCHA не настроена
         </div>
     </div>
 </template>
 
-<!-- подключение скрипта reCAPTCHA v3 -->
-<script src="https://www.google.com/recaptcha/api.js?render=<?= import.meta.env.VITE_G_RECAPTCHA_SITE_KEY ?>"></script>
+<script src="https://www.google.com/recaptcha/api.js?render=YOUR_SITE_KEY"></script>
