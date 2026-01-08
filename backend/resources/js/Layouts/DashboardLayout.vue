@@ -1,36 +1,35 @@
 <script setup>
-import {ref, computed, onMounted, watch} from 'vue'
-import {Link, usePage} from '@inertiajs/vue3'
+import { ref, computed, onMounted } from 'vue'
+import { Link, usePage } from '@inertiajs/vue3'
 
-// Inertia props
+/* ================= Inertia ================= */
 const page = usePage()
 const user = computed(() => page.props.auth?.user ?? {})
-const flash = computed(() => page.props.flash ?? {})
 
-// UI state
+/* ================= UI state ================= */
 const sidebarOpen = ref(false)
 const userMenuOpen = ref(false)
-const expanded = ref({cabinet: false})
+const expanded = ref({
+    cabinet: false,
+})
 
-// Главные пункты
+/* ================= Navigation ================= */
 const navMainFlat = [
-    {name: 'Dashboard', routeName: 'dashboard', icon: 'grid'},
-    {name: 'Просмотры', routeName: 'visits', icon: 'eye'},
+    { name: 'Dashboard', routeName: 'dashboard', icon: 'grid' },
+    { name: 'Просмотры', routeName: 'visits', icon: 'eye' },
 ]
 
-// Вложенная группа «Кабинет»
 const cabinetGroup = {
-    key: 'cabinet',
     title: 'Кабинет',
     icon: 'briefcase',
+    match: 'cabinet.*',
     children: [
-        {name: 'Настройки', routeName: 'cabinet.dashboard'},
-        {name: 'Просмотры', routeName: 'cabinet.visits.index'},
-        {name: 'Editable Tables', routeName: 'dashboard'},
+        { name: 'Настройки', routeName: 'cabinet.dashboard' },
+        { name: 'Просмотры', routeName: 'cabinet.visits.index' },
     ],
 }
 
-// icons
+/* ================= Helpers ================= */
 const iconPath = (name) => ({
     grid: 'M4 4h7v7H4V4zm9 0h7v7h-7V4zM4 13h7v7H4v-7zm9 7v-7h7v7h-7z',
     eye: 'M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12zm11 3a3 3 0 100-6 3 3 0 000 6z',
@@ -41,57 +40,54 @@ const iconPath = (name) => ({
     burger: 'M4 6h16M4 12h16M4 18h16',
 }[name])
 
-const toggleSidebar = () => (sidebarOpen.value = !sidebarOpen.value)
-const closeSidebar = () => (sidebarOpen.value = false)
-
-const isActive = (name) => {
+const isActive = (routeName) => {
     try {
-        return route().current(name)
+        return route().current(routeName)
     } catch {
         return false
     }
 }
 
-const syncExpandedWithRoute = () => {
-    expanded.value.cabinet = cabinetGroup.children.some(c =>
-        isActive(c.routeName)
-    )
+const isCabinetActive = () => {
+    try {
+        return route().current(cabinetGroup.match)
+    } catch {
+        return false
+    }
 }
 
+/* ================= Lifecycle ================= */
 onMounted(() => {
+    if (isCabinetActive()) {
+        expanded.value.cabinet = true
+    }
+
     window.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             sidebarOpen.value = false
             userMenuOpen.value = false
         }
     })
-    syncExpandedWithRoute()
 })
 </script>
-
 
 <template>
     <div class="min-h-screen bg-slate-50 text-slate-800">
         <!-- Topbar -->
         <header class="sticky top-0 z-40 flex h-14 items-center justify-between bg-white px-3 shadow sm:px-6 lg:ml-60">
-            <!-- burger / close (mobile) -->
-            <button class="rounded-md p-2 hover:bg-slate-100 lg:hidden" aria-label="Меню" @click="toggleSidebar">
+            <button class="rounded-md p-2 hover:bg-slate-100 lg:hidden" @click="sidebarOpen = !sidebarOpen">
                 <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path :d="sidebarOpen ? iconPath('close') : iconPath('burger')" stroke-linecap="round"
-                          stroke-linejoin="round"/>
+                    <path :d="sidebarOpen ? iconPath('close') : iconPath('burger')" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </button>
 
-            <!-- brand -->
             <Link :href="route('dashboard')" class="flex items-center gap-2">
-                <span
-                    class="inline-flex h-8 w-8 items-center justify-center rounded bg-blue-600 text-white font-semibold">V</span>
-                <span class="text-base font-semibold">Velonic</span>
+                <span class="inline-flex h-8 w-8 items-center justify-center rounded bg-blue-600 text-white font-semibold">V</span>
+                <span class="font-semibold">Velonic</span>
             </Link>
 
-            <!-- right -->
             <div class="flex items-center gap-2">
-                <button class="rounded-md p-2 hover:bg-slate-100" aria-label="Уведомления">
+                <button class="rounded-md p-2 hover:bg-slate-100">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path :d="iconPath('bell')" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
@@ -101,9 +97,8 @@ onMounted(() => {
                     <button class="flex items-center gap-2 rounded-md p-1.5 hover:bg-slate-100"
                             @click="userMenuOpen = !userMenuOpen">
                         <img :src="`https://i.pravatar.cc/64?u=${user?.email || 'user'}`" class="h-8 w-8 rounded-full"/>
-                        <span class="hidden text-sm font-medium sm:inline">{{ user?.name }}</span>
-                        <svg class="hidden h-4 w-4 sm:inline" fill="none" stroke="currentColor" stroke-width="2"
-                             viewBox="0 0 24 24">
+                        <span class="hidden sm:inline text-sm font-medium">{{ user?.name }}</span>
+                        <svg class="hidden sm:inline h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path :d="iconPath('chevron')" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                     </button>
@@ -123,46 +118,40 @@ onMounted(() => {
             </div>
         </header>
 
-        <!-- DESKTOP aside -->
+        <!-- Sidebar -->
         <aside class="fixed inset-y-0 left-0 z-30 hidden w-60 bg-white p-4 shadow-md lg:block">
             <nav class="space-y-1">
-                <p class="mb-2 px-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Main</p>
+                <p class="mb-2 px-2 text-xs font-semibold uppercase text-slate-500">Main</p>
 
-                <Link
-                    v-for="item in navMainFlat"
-                    :key="item.name"
-                    :href="route(item.routeName)"
-                    class="flex items-center gap-3 rounded-md px-3 py-2 text-sm"
-                    :class="isActive(item.routeName)
-                        ? 'bg-slate-100 font-medium text-slate-900 shadow-sm'
-                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
-                >
-                    <svg class="h-5 w-5 opacity-70" fill="none" stroke="currentColor" stroke-width="2"
-                         viewBox="0 0 24 24">
+                <Link v-for="item in navMainFlat" :key="item.name"
+                      :href="route(item.routeName)"
+                      class="flex items-center gap-3 rounded-md px-3 py-2 text-sm"
+                      :class="isActive(item.routeName)
+                        ? 'bg-slate-100 font-medium text-slate-900'
+                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'">
+                    <svg class="h-5 w-5 opacity-70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path :d="iconPath(item.icon)" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     {{ item.name }}
                 </Link>
 
-                <!-- CABINET GROUP -->
-                <div class="rounded-md">
+                <!-- Cabinet -->
+                <div>
                     <button
-                        class="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm"
-                        :class="cabinetGroup.children.some(c => isActive(c.routeName))
-                            ? 'bg-slate-100 text-slate-900 font-medium shadow-sm'
+                        class="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm"
+                        :class="isCabinetActive()
+                            ? 'bg-slate-100 font-medium text-slate-900'
                             : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
                         @click="expanded.cabinet = !expanded.cabinet"
                     >
                         <span class="flex items-center gap-3">
-                            <svg class="h-5 w-5 opacity-70" fill="none" stroke="currentColor" stroke-width="2"
-                                 viewBox="0 0 24 24">
+                            <svg class="h-5 w-5 opacity-70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path :d="iconPath(cabinetGroup.icon)" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                             {{ cabinetGroup.title }}
                         </span>
 
-                        <svg class="h-4 w-4 transition"
-                             :class="{ 'rotate-180': expanded.cabinet }"
+                        <svg class="h-4 w-4 transition" :class="{ 'rotate-180': expanded.cabinet }"
                              fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path :d="iconPath('chevron')" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
@@ -176,8 +165,8 @@ onMounted(() => {
                                     preserve-state
                                     class="block rounded-md px-3 py-1.5 text-sm"
                                     :class="isActive(child.routeName)
-        ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm'
-        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
+                                        ? 'bg-blue-50 text-blue-700 font-semibold'
+                                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
                                 >
                                     {{ child.name }}
                                 </Link>
@@ -197,13 +186,13 @@ onMounted(() => {
     </div>
 </template>
 
-
 <style>
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
     transition: opacity .15s ease;
 }
-
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
     opacity: 0;
 }
 </style>
