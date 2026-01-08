@@ -85,17 +85,11 @@ class VisitController extends Controller
         return redirect()->route('cabinet.visits.index')->with('success', 'Visit deleted!');
     }
 
-    public function finish(Request $request)
+    public function finish(Request $request, VisitsRecord $visitsRecord)
     {
         $request->validate([
             'token' => 'required|string',
-            'visit_id' => 'required|integer',
         ]);
-
-        $visitsRecord = VisitsRecord::find($request->input('visit_id'));
-        if (!$visitsRecord) {
-            return response()->json(['message' => 'Visit record not found'], 404);
-        }
 
         $token = $request->input('token');
         $secret = config('services.recaptcha.secret');
@@ -103,24 +97,18 @@ class VisitController extends Controller
         $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
             'secret' => $secret,
             'response' => $token,
-            // 'remoteip' => $request->ip(),
         ]);
 
         $body = $response->json();
-
-        // логируем для дебага
-        \Log::debug('reCAPTCHA verify', $body ?: []);
 
         if (empty($body['success'])) {
             return response()->json(['message' => 'reCAPTCHA verification failed', 'detail' => $body], 422);
         }
 
-        // v3 возвращает score 0..1
         if (($body['score'] ?? 0) < 0.5) {
             return response()->json(['message' => 'reCAPTCHA score too low', 'score' => $body['score'] ?? null], 422);
         }
 
-        // всё ок
         $visitsRecord->finishVisit();
 
         return response()->json([

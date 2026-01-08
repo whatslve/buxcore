@@ -66,9 +66,8 @@ async function submitToBackend() {
     submitOk.value = false
 
     try {
-        const res = await axios.post('/visit/finish', {
-            token: recaptchaToken.value,
-            visit_id: props.visit_id,
+        const res = await axios.post(`/visits-records/${props.visit_id}/finish`, {
+            token: recaptchaToken.value
         })
         submitOk.value = true
         showCaptcha.value = false
