@@ -17,7 +17,7 @@ const submitError = ref('')
 const submitOk = ref(false)
 const siteKey = import.meta.env.VITE_G_RECAPTCHA_SITE_KEY || ''
 
-// Таймер
+// Таймер перед показом reCAPTCHA
 onMounted(() => {
     const interval = setInterval(() => {
         if (timer.value > 0) timer.value--
@@ -29,7 +29,7 @@ onMounted(() => {
     }, 1000)
 })
 
-// Динамическая загрузка скрипта
+// Динамическая загрузка скрипта reCAPTCHA v3
 function loadRecaptcha() {
     if (!siteKey) {
         submitError.value = 'reCAPTCHA не настроена'
@@ -48,21 +48,29 @@ function loadRecaptcha() {
     }
 }
 
-// Генерация токена v3
-async function executeRecaptcha() {
-    try {
-        await window.grecaptcha.ready()
-        const token = await window.grecaptcha.execute(siteKey, { action: 'visit' })
-        if (!token) throw new Error('Пустой токен reCAPTCHA')
-        recaptchaToken.value = token
-        submitToBackend()
-    } catch (err) {
-        console.error('reCAPTCHA error', err)
-        submitError.value = 'Ошибка reCAPTCHA. Попробуйте ещё раз.'
+// Получение токена v3 через callback ready
+function executeRecaptcha() {
+    if (!window.grecaptcha || typeof window.grecaptcha.execute !== 'function') {
+        submitError.value = 'reCAPTCHA не готова или версия неправильная'
+        console.error('grecaptcha.execute not found', window.grecaptcha)
+        return
     }
+
+    window.grecaptcha.ready(() => {
+        window.grecaptcha.execute(siteKey, { action: 'visit' })
+            .then(token => {
+                if (!token) throw new Error('Пустой токен reCAPTCHA')
+                recaptchaToken.value = token
+                submitToBackend()
+            })
+            .catch(err => {
+                console.error('reCAPTCHA execute error', err)
+                submitError.value = 'Ошибка reCAPTCHA. Попробуйте ещё раз.'
+            })
+    })
 }
 
-// Отправка на бэкенд
+// Отправка токена на бэкенд
 async function submitToBackend() {
     if (!recaptchaToken.value) return
     isSubmitting.value = true
@@ -83,7 +91,7 @@ async function submitToBackend() {
     }
 }
 
-// Повторная проверка (если ошибка)
+// Повторная проверка при ошибке
 function retryCaptcha() {
     submitError.value = ''
     recaptchaToken.value = ''
@@ -102,7 +110,7 @@ function retryCaptcha() {
         <!-- Основной iframe -->
         <iframe :src="link" class="w-full h-full border-0" allowfullscreen></iframe>
 
-        <!-- reCAPTCHA overlay -->
+        <!-- Overlay reCAPTCHA -->
         <div v-if="showCaptcha && siteKey" class="absolute inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
             <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-lg text-center">
                 <h2 class="text-xl font-semibold mb-4">Подтвердите, что вы не робот</h2>
