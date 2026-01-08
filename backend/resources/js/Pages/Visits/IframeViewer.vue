@@ -29,38 +29,55 @@ onMounted(() => {
     }, 1000)
 })
 
+// Динамическая загрузка скрипта reCAPTCHA v3
 function loadRecaptcha() {
     if (!siteKey) {
         submitError.value = 'reCAPTCHA не настроена'
+        console.warn('reCAPTCHA SITE_KEY не найден в .env')
         return
     }
 
-    // Если скрипт ещё не вставлен
     if (!window.grecaptcha) {
+        console.log('Подключаем скрипт reCAPTCHA v3...')
         const script = document.createElement('script')
         script.src = `https://www.google.com/recaptcha/api.js?render=${siteKey}`
         script.async = true
         script.defer = true
-        script.onload = () => executeRecaptcha() // вызываем только после полной загрузки
+        script.onload = () => {
+            console.log('reCAPTCHA script loaded')
+            executeRecaptcha()
+        }
+        script.onerror = () => {
+            console.error('Не удалось загрузить скрипт reCAPTCHA')
+            submitError.value = 'Не удалось загрузить reCAPTCHA'
+        }
         document.head.appendChild(script)
     } else {
         executeRecaptcha()
     }
 }
 
+// Получение токена v3 через callback ready()
 function executeRecaptcha() {
-    // Проверяем, что execute реально существует
-    if (!window.grecaptcha || typeof window.grecaptcha.execute !== 'function') {
+    if (!window.grecaptcha) {
+        submitError.value = 'reCAPTCHA не готова'
+        console.error('grecaptcha object missing', window.grecaptcha)
+        return
+    }
+
+    if (typeof window.grecaptcha.execute !== 'function') {
         submitError.value = 'reCAPTCHA не готова или версия неправильная'
         console.error('grecaptcha.execute not found', window.grecaptcha)
         return
     }
 
-    // v3 использует callback ready()
+    console.log('Запускаем grecaptcha.ready...')
     window.grecaptcha.ready(() => {
+        console.log('grecaptcha ready, вызываем execute...')
         window.grecaptcha.execute(siteKey, { action: 'visit' })
             .then(token => {
                 if (!token) throw new Error('Пустой токен reCAPTCHA')
+                console.log('reCAPTCHA token получен:', token)
                 recaptchaToken.value = token
                 submitToBackend()
             })
@@ -71,7 +88,6 @@ function executeRecaptcha() {
     })
 }
 
-
 // Отправка токена на бэкенд
 async function submitToBackend() {
     if (!recaptchaToken.value) return
@@ -80,12 +96,15 @@ async function submitToBackend() {
     submitOk.value = false
 
     try {
+        console.log('Отправляем token на бэкенд...')
         const res = await axios.post(`/visits-records/${props.visit_id}/finish`, {
             token: recaptchaToken.value
         })
+        console.log('Ответ бэкенда:', res.data)
         submitOk.value = true
         showCaptcha.value = false
     } catch (err) {
+        console.error('Ошибка отправки на бэкенд', err)
         submitError.value = err?.response?.data?.message || 'Не удалось отправить запрос'
         recaptchaToken.value = ''
     } finally {
@@ -95,9 +114,30 @@ async function submitToBackend() {
 
 // Повторная проверка при ошибке
 function retryCaptcha() {
+    console.log('Повторная проверка reCAPTCHA...')
     submitError.value = ''
     recaptchaToken.value = ''
     executeRecaptcha()
+}
+
+// MutationObserver для iframe (если нужен сторонний скрипт)
+function observeIframe(iframeEl) {
+    if (!(iframeEl instanceof HTMLIFrameElement)) {
+        console.warn('Невозможно наблюдать за iframe: target не HTMLIFrameElement')
+        return
+    }
+
+    iframeEl.addEventListener('load', () => {
+        console.log('iframe загружен, можно запускать MutationObserver')
+        const observer = new MutationObserver(mutations => {
+            console.log('MutationObserver сработал', mutations)
+        })
+        if (iframeEl.contentDocument?.body) {
+            observer.observe(iframeEl.contentDocument.body, { childList: true, subtree: true })
+        } else {
+            console.warn('iframe.body отсутствует')
+        }
+    })
 }
 </script>
 
@@ -110,7 +150,13 @@ function retryCaptcha() {
         </div>
 
         <!-- Основной iframe -->
-        <iframe :src="link" class="w-full h-full border-0" allowfullscreen></iframe>
+        <iframe
+            ref="iframeEl"
+            :src="link"
+            class="w-full h-full border-0"
+            allowfullscreen
+            @load="observeIframe($event.target)">
+        </iframe>
 
         <!-- Overlay reCAPTCHA -->
         <div v-if="showCaptcha && siteKey" class="absolute inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
