@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Http;
 class VisitController extends Controller
 {
 
@@ -84,10 +85,40 @@ class VisitController extends Controller
         return redirect()->route('cabinet.visits.index')->with('success', 'Visit deleted!');
     }
 
-    public function finish(VisitsRecord $visitsRecord) {
+    public function finish(Request $request, VisitsRecord $visitsRecord)
+    {
+        $token = $request->input('token');
+
+        if (!$token) {
+            return response()->json(['message' => 'Token is required'], 422);
+        }
+
+        // Проверка reCAPTCHA через Google
+        $secret = config('services.recaptcha.secret');
+        $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+            'secret' => $secret,
+            'response' => $token,
+            //'remoteip' => $request->ip(), // опционально
+        ]);
+
+        $body = $response->json();
+
+        if (!isset($body['success']) || $body['success'] !== true) {
+            return response()->json(['message' => 'reCAPTCHA verification failed'], 422);
+        }
+
+        // Проверяем score v3 (0.0-1.0)
+        if (isset($body['score']) && $body['score'] < 0.5) {
+            return response()->json(['message' => 'reCAPTCHA score too low'], 422);
+        }
+
+        // Всё ок — завершаем визит
         $visitsRecord->finishVisit();
+
         return response()->json([
             'status' => 'visit finished',
+            'recaptcha_score' => $body['score'] ?? null,
         ]);
     }
+
 }
