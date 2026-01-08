@@ -57,36 +57,51 @@ function loadRecaptcha() {
     }
 }
 
-// Получение токена v3 через callback ready()
-function executeRecaptcha() {
-    if (!window.grecaptcha) {
-        submitError.value = 'reCAPTCHA не готова'
-        console.error('grecaptcha object missing', window.grecaptcha)
-        return
-    }
+function waitForRecaptcha(maxAttempts = 10, intervalMs = 500) {
+    return new Promise((resolve, reject) => {
+        let attempts = 0
 
-    if (typeof window.grecaptcha.execute !== 'function') {
-        submitError.value = 'reCAPTCHA не готова или версия неправильная'
-        console.error('grecaptcha.execute not found', window.grecaptcha)
-        return
-    }
+        const check = () => {
+            if (window.grecaptcha && typeof window.grecaptcha.execute === 'function') {
+                resolve(window.grecaptcha)
+            } else {
+                attempts++
+                if (attempts >= maxAttempts) {
+                    reject(new Error('grecaptcha.execute не найден после ожидания'))
+                } else {
+                    setTimeout(check, intervalMs)
+                }
+            }
+        }
 
-    console.log('Запускаем grecaptcha.ready...')
-    window.grecaptcha.ready(() => {
-        console.log('grecaptcha ready, вызываем execute...')
-        window.grecaptcha.execute(siteKey, { action: 'visit' })
-            .then(token => {
-                if (!token) throw new Error('Пустой токен reCAPTCHA')
-                console.log('reCAPTCHA token получен:', token)
-                recaptchaToken.value = token
-                submitToBackend()
-            })
-            .catch(err => {
-                console.error('reCAPTCHA execute error', err)
-                submitError.value = 'Ошибка reCAPTCHA. Попробуйте ещё раз.'
-            })
+        check()
     })
 }
+
+function executeRecaptcha() {
+    waitForRecaptcha()
+        .then(grecaptcha => {
+            console.log('grecaptcha готов, вызываем execute...')
+            grecaptcha.ready(() => {
+                grecaptcha.execute(siteKey, { action: 'visit' })
+                    .then(token => {
+                        if (!token) throw new Error('Пустой токен reCAPTCHA')
+                        console.log('Токен получен:', token)
+                        recaptchaToken.value = token
+                        submitToBackend()
+                    })
+                    .catch(err => {
+                        console.error('reCAPTCHA execute error', err)
+                        submitError.value = 'Ошибка reCAPTCHA. Попробуйте ещё раз.'
+                    })
+            })
+        })
+        .catch(err => {
+            console.error(err)
+            submitError.value = 'reCAPTCHA не инициализирована'
+        })
+}
+
 
 // Отправка токена на бэкенд
 async function submitToBackend() {
