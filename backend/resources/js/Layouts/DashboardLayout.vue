@@ -173,10 +173,11 @@ onMounted(() => {
                             <li v-for="child in cabinetGroup.children" :key="child.name">
                                 <Link
                                     :href="route(child.routeName)"
+                                    preserve-state
                                     class="block rounded-md px-3 py-1.5 text-sm"
                                     :class="isActive(child.routeName)
-                                        ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm'
-                                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
+        ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm'
+        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
                                 >
                                     {{ child.name }}
                                 </Link>
