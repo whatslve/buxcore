@@ -29,33 +29,34 @@ onMounted(() => {
     }, 1000)
 })
 
-// Динамическая загрузка скрипта reCAPTCHA v3
 function loadRecaptcha() {
     if (!siteKey) {
         submitError.value = 'reCAPTCHA не настроена'
         return
     }
 
+    // Если скрипт ещё не вставлен
     if (!window.grecaptcha) {
         const script = document.createElement('script')
         script.src = `https://www.google.com/recaptcha/api.js?render=${siteKey}`
         script.async = true
         script.defer = true
-        script.onload = () => executeRecaptcha()
+        script.onload = () => executeRecaptcha() // вызываем только после полной загрузки
         document.head.appendChild(script)
     } else {
         executeRecaptcha()
     }
 }
 
-// Получение токена v3 через callback ready
 function executeRecaptcha() {
+    // Проверяем, что execute реально существует
     if (!window.grecaptcha || typeof window.grecaptcha.execute !== 'function') {
         submitError.value = 'reCAPTCHA не готова или версия неправильная'
         console.error('grecaptcha.execute not found', window.grecaptcha)
         return
     }
 
+    // v3 использует callback ready()
     window.grecaptcha.ready(() => {
         window.grecaptcha.execute(siteKey, { action: 'visit' })
             .then(token => {
@@ -69,6 +70,7 @@ function executeRecaptcha() {
             })
     })
 }
+
 
 // Отправка токена на бэкенд
 async function submitToBackend() {
