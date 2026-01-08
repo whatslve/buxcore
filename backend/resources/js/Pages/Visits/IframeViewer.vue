@@ -3,7 +3,6 @@ import { ref, onMounted } from 'vue'
 import { Head } from '@inertiajs/vue3'
 import axios from 'axios'
 
-/** Props от Inertia */
 const props = defineProps({
     link: { type: String, required: true },
     time: { type: Number, required: true },
@@ -16,7 +15,6 @@ const recaptchaToken = ref('')
 const isSubmitting = ref(false)
 const submitError = ref('')
 const submitOk = ref(false)
-
 const siteKey = import.meta.env.VITE_G_RECAPTCHA_SITE_KEY || ''
 
 // Таймер
@@ -31,7 +29,7 @@ onMounted(() => {
     }, 1000)
 })
 
-// Динамическая загрузка reCAPTCHA v3
+// Динамическая загрузка скрипта
 function loadRecaptcha() {
     if (!siteKey) {
         submitError.value = 'reCAPTCHA не настроена'
@@ -50,7 +48,7 @@ function loadRecaptcha() {
     }
 }
 
-// Запуск проверки v3
+// Генерация токена v3
 async function executeRecaptcha() {
     try {
         recaptchaToken.value = await window.grecaptcha.execute(siteKey, { action: 'visit' })
@@ -60,7 +58,7 @@ async function executeRecaptcha() {
     }
 }
 
-// Отправка на backend
+// Отправка на бэкенд
 async function submitToBackend() {
     if (!recaptchaToken.value) return
     isSubmitting.value = true
@@ -68,7 +66,7 @@ async function submitToBackend() {
     submitOk.value = false
 
     try {
-        await axios.post('/visit/finish', {
+        const res = await axios.post('/visit/finish', {
             token: recaptchaToken.value,
             visit_id: props.visit_id,
         })
@@ -85,17 +83,14 @@ async function submitToBackend() {
 
 <template>
     <Head title="Посещение" />
-
     <div class="w-screen h-screen relative">
-        <div v-if="timer > 0"
-             class="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-black/70 text-white px-4 py-2 rounded-lg font-bold pointer-events-none">
+        <div v-if="timer > 0" class="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-black/70 text-white px-4 py-2 rounded-lg font-bold pointer-events-none">
             {{ timer }} сек
         </div>
 
         <iframe :src="link" class="w-full h-full border-0" allowfullscreen></iframe>
 
-        <div v-if="showCaptcha && siteKey"
-             class="absolute inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+        <div v-if="showCaptcha && siteKey" class="absolute inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
             <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-lg text-center">
                 <h2 class="text-xl font-semibold mb-4">Подтвердите, что вы не робот</h2>
                 <p v-if="submitError" class="mt-4 text-sm text-red-600">{{ submitError }}</p>
@@ -104,8 +99,7 @@ async function submitToBackend() {
             </div>
         </div>
 
-        <div v-if="showCaptcha && !siteKey"
-             class="absolute inset-0 z-50 bg-black/60 flex items-center justify-center text-white">
+        <div v-if="showCaptcha && !siteKey" class="absolute inset-0 z-50 bg-black/60 flex items-center justify-center text-white">
             reCAPTCHA не настроена
         </div>
     </div>

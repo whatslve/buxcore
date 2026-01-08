@@ -85,34 +85,42 @@ class VisitController extends Controller
         return redirect()->route('cabinet.visits.index')->with('success', 'Visit deleted!');
     }
 
-    public function finish(Request $request, VisitsRecord $visitsRecord)
+    public function finish(Request $request)
     {
-        $token = $request->input('token');
+        $request->validate([
+            'token' => 'required|string',
+            'visit_id' => 'required|integer',
+        ]);
 
-        if (!$token) {
-            return response()->json(['message' => 'Token is required'], 422);
+        $visitsRecord = VisitsRecord::find($request->input('visit_id'));
+        if (!$visitsRecord) {
+            return response()->json(['message' => 'Visit record not found'], 404);
         }
 
-        // Проверка reCAPTCHA через Google
+        $token = $request->input('token');
         $secret = config('services.recaptcha.secret');
+
         $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
             'secret' => $secret,
             'response' => $token,
-            //'remoteip' => $request->ip(), // опционально
+            // 'remoteip' => $request->ip(),
         ]);
 
         $body = $response->json();
 
-        if (!isset($body['success']) || $body['success'] !== true) {
-            return response()->json(['message' => 'reCAPTCHA verification failed'], 422);
+        // логируем для дебага
+        \Log::debug('reCAPTCHA verify', $body ?: []);
+
+        if (empty($body['success'])) {
+            return response()->json(['message' => 'reCAPTCHA verification failed', 'detail' => $body], 422);
         }
 
-        // Проверяем score v3 (0.0-1.0)
-        if (isset($body['score']) && $body['score'] < 0.5) {
-            return response()->json(['message' => 'reCAPTCHA score too low'], 422);
+        // v3 возвращает score 0..1
+        if (($body['score'] ?? 0) < 0.5) {
+            return response()->json(['message' => 'reCAPTCHA score too low', 'score' => $body['score'] ?? null], 422);
         }
 
-        // Всё ок — завершаем визит
+        // всё ок
         $visitsRecord->finishVisit();
 
         return response()->json([
@@ -120,5 +128,4 @@ class VisitController extends Controller
             'recaptcha_score' => $body['score'] ?? null,
         ]);
     }
-
 }
