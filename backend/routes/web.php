@@ -66,6 +66,12 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/cabinet/quests/', [QuestsController::class, 'index'])
         ->name('cabinet.quests.index');
+
+    Route::get('/cabinet/quests/create', [QuestsController::class, 'create'])
+        ->name('cabinet.quests.create');
+
+    Route::get('/cabinet/quests/{quest}/edit', [QuestsController::class, 'edit'])
+        ->name('cabinet.quests.edit');
 });
 
 /*

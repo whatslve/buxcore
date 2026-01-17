@@ -18,4 +18,10 @@ class QuestsController extends Controller
             'quests' => $quests
         ]);
     }
+    public function create() {
+        return dd('test');
+    }
+    public function edit($id) {
+        return dd('test');
+    }
 }
