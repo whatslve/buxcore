@@ -3,8 +3,9 @@ WORKDIR /var/www/backend
 ARG UID=1001
 ARG GID=1001
 
+# Создание пользователя
 RUN groupadd -g ${GID} appgroup \
- && useradd -m -u ${UID} -g appgroup buxcore \
+ && useradd -m -u ${UID} -g appgroup buxcore
 
 # Зависимости
 RUN apt-get update && apt-get install -y \
@@ -17,9 +18,9 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # Рабочая папка и права
 RUN mkdir -p /var/www/backend \
-    && chown -R www-data:www-data /var/www/backend
+    && chown -R ${UID}:${GID} /var/www/backend
 
-USER www-data
-
+# Переключаемся на пользователя (по желанию)
+USER buxcore
 
 CMD ["php-fpm"]
