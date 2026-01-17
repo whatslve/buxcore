@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\QuestsController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -62,6 +63,9 @@ Route::middleware('auth')->group(function () {
 
     Route::put('/cabinet/visits/{visit}', [VisitController::class, 'update'])
         ->name('cabinet.visits.update');
+
+    Route::get('/cabinet/quests/', [QuestsController::class, 'index'])
+        ->name('cabinet.quests.index');
 });
 
 /*

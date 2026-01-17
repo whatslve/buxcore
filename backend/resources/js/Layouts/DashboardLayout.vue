@@ -26,6 +26,7 @@ const cabinetGroup = {
     children: [
         { name: 'Настройки', routeName: 'cabinet.dashboard' },
         { name: 'Просмотры', routeName: 'cabinet.visits.index' },
+        { name: 'Задания', routeName: 'cabinet.quests.index' },
     ],
 }
 
