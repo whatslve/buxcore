@@ -163,7 +163,7 @@ const form = useForm({
                             Создать
                         </button>
                         <Link
-                            :href="route('quests.index')"
+                            :href="route('cabinet.quests.index')"
                             class="text-sm text-gray-600 hover:text-gray-900"
                         >
                             Отмена
