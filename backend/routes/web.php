@@ -70,6 +70,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/cabinet/quests/create', [QuestsController::class, 'create'])
         ->name('cabinet.quests.create');
 
+    Route::post('/cabinet/quests', [QuestsController::class, 'store'])
+        ->name('cabinet.quests.store');
+
     Route::get('/cabinet/quests/{quest}/edit', [QuestsController::class, 'edit'])
         ->name('cabinet.quests.edit');
 });

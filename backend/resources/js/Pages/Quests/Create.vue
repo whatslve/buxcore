@@ -35,7 +35,7 @@ const form = useForm({
         <div class="flex items-center justify-between mb-4">
             <h1 class="text-lg font-semibold">Создать задание</h1>
             <Link
-                :href="route('quests.index')"
+                :href="route('cabinet.quests.index')"
                 class="inline-flex items-center gap-2 rounded-md
                        border border-gray-300 bg-white px-3 py-1.5
                        text-sm font-medium text-gray-700
@@ -47,7 +47,7 @@ const form = useForm({
 
         <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
             <div class="max-w-3xl mx-auto py-8">
-                <form @submit.prevent="form.post(route('quests.store'))" class="space-y-6">
+                <form @submit.prevent="form.post(route('cabinet.quests.store'))" class="space-y-6">
 
                     <!-- Название -->
                     <div>
