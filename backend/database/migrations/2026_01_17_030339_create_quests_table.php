@@ -37,7 +37,7 @@ return new class extends Migration
             $table->boolean('show_screenshot_help')->default(false);
             $table->boolean('check_is_proofed_email')->default(false);
             $table->boolean('check_is_proofed_phone')->default(false);
-            
+
 
             $table->enum('referral_filter', ['all','my_referrals','no_refer'])->default('all');
             $table->timestamp('start_at')->nullable();

@@ -16,7 +16,9 @@ class VisitController extends Controller
     public function index()
     {
         return Inertia::render('Visits/Index', [
-            'visits' => Visit::where('user_id', Auth::id())->latest()->get(),
+            'visits' => Visit::where('user_id', Auth::id())
+                ->latest()
+                ->get(),
         ]);
     }
 
