@@ -1,34 +1,41 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3'
-import DashboardLayout from "../../Layouts/DashboardLayout.vue";
+import DashboardLayout from '@/Layouts/DashboardLayout.vue'
 
 const form = useForm({
-    title: '',
+    name: '',
+    type: '',
     description: '',
-    frame: 0,
-    time: 5,
-    status: 'off',
-    reward: 0,
-    cost: 0,
-    views: 0,
-    balance: 0,
-    link: '',
-    max_views_per_day: 0,
-    ip_filter: 'off',
+    complete_info: '',
+    check_type: 'manual',
+    link_selection_mode: 'sequential',
+
+    quest_type_id: null,
+    daily_limit: 0,
+    repeat_after_hours: null,
+    execution_time_hours: 120,
+    min_experience: 0,
+
+    white_list_only: false,
+    allow_parallel: false,
+    is_adult: false,
+    is_soft_install: false,
+    show_screenshot_help: false,
+    check_is_proofed_email: false,
+    check_is_proofed_phone: false,
+
+    referral_filter: 'all',
+    start_at: null,
 })
 </script>
 
 <template>
-    <Head title="Create Visit" />
-
+    <Head title="Создать задание" />
     <DashboardLayout>
-        <!-- header -->
         <div class="flex items-center justify-between mb-4">
-            <h1 class="text-lg font-semibold">Задания просмотров</h1>
-
-            <!-- КНОПКА НАЗАД -->
+            <h1 class="text-lg font-semibold">Создать задание</h1>
             <Link
-                :href="route('cabinet.visits.index')"
+                :href="route('quests.index')"
                 class="inline-flex items-center gap-2 rounded-md
                        border border-gray-300 bg-white px-3 py-1.5
                        text-sm font-medium text-gray-700
@@ -40,112 +47,112 @@ const form = useForm({
 
         <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
             <div class="max-w-3xl mx-auto py-8">
-                <h2 class="text-2xl font-semibold mb-6">Create Visit</h2>
+                <form @submit.prevent="form.post(route('quests.store'))" class="space-y-6">
 
-                <form
-                    @submit.prevent="form.post(route('cabinet.visits.store'))"
-                    class="space-y-6"
-                >
-                    <!-- Title -->
+                    <!-- Название -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Title</label>
-                        <input v-model="form.title" type="text"
+                        <label class="block text-sm font-medium text-gray-700">Название</label>
+                        <input v-model="form.name" type="text"
                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm
                                focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"/>
                     </div>
 
-                    <!-- Description -->
+                    <!-- Тип -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Description</label>
+                        <label class="block text-sm font-medium text-gray-700">Тип</label>
+                        <input v-model="form.type" type="text"
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm
+                               focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"/>
+                    </div>
+
+                    <!-- Описание -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Описание</label>
                         <textarea v-model="form.description" rows="3"
                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm
                                   focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
                     </div>
 
-                    <!-- Frame -->
+                    <!-- Поле complete_info -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Frame</label>
-                        <input v-model.number="form.frame" type="number" min="0"
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm
-                               focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"/>
+                        <label class="block text-sm font-medium text-gray-700">Инструкция для пользователя</label>
+                        <textarea v-model="form.complete_info" rows="3"
+                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm
+                                  focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
                     </div>
 
-                    <!-- Time -->
+                    <!-- Check Type -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Time (seconds)</label>
-                        <select v-model.number="form.time"
+                        <label class="block text-sm font-medium text-gray-700">Тип проверки</label>
+                        <select v-model="form.check_type"
                                 class="mt-1 block w-full rounded-md border-gray-300
                                 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                            <option v-for="t in [5,10,15,20,30,60,80,100]" :key="t" :value="t">
-                                {{ t }}
-                            </option>
+                            <option value="manual">Ручная</option>
+                            <option value="automatic">Автоматическая</option>
                         </select>
                     </div>
 
-                    <!-- Status -->
+                    <!-- Link selection mode -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Status</label>
-                        <select v-model="form.status"
+                        <label class="block text-sm font-medium text-gray-700">Выбор ссылки</label>
+                        <select v-model="form.link_selection_mode"
                                 class="mt-1 block w-full rounded-md border-gray-300
                                 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                            <option value="on">On</option>
-                            <option value="off">Off</option>
-                            <option value="ban">Ban</option>
+                            <option value="sequential">По порядку</option>
+                            <option value="random">Случайно</option>
                         </select>
                     </div>
 
-                    <!-- Reward -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Reward</label>
-                        <input v-model.number="form.reward" type="number" step="0.01"
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm
-                               focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"/>
-                    </div>
-
-                    <!-- Cost -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Cost</label>
-                        <input v-model.number="form.cost" type="number" step="0.01"
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm
-                               focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"/>
-                    </div>
-
-                    <!-- Balance -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Balance</label>
-                        <input v-model.number="form.balance" type="number" step="0.01"
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm
-                               focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"/>
-                    </div>
-
-                    <!-- Link -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Link</label>
-                        <input v-model="form.link" type="url"
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm
-                               focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"/>
-                    </div>
-
-                    <!-- Max views per day -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">
-                            Max views per day
+                    <!-- Флаги -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" v-model="form.is_adult" />
+                            Для взрослых
                         </label>
-                        <input v-model.number="form.max_views_per_day" type="number" min="0"
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm
-                               focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"/>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" v-model="form.is_soft_install" />
+                            Требует установки ПО
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" v-model="form.show_screenshot_help" />
+                            Показать помощь по скриншотам
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" v-model="form.white_list_only" />
+                            Только для белого списка
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" v-model="form.allow_parallel" />
+                            Разрешить параллельное выполнение
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" v-model="form.check_is_proofed_email" />
+                            Проверенный Email
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" v-model="form.check_is_proofed_phone" />
+                            Проверенный телефон
+                        </label>
                     </div>
 
-                    <!-- IP filter -->
+                    <!-- Referral Filter -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">IP Filter</label>
-                        <select v-model="form.ip_filter"
+                        <label class="block text-sm font-medium text-gray-700">Реферальный фильтр</label>
+                        <select v-model="form.referral_filter"
                                 class="mt-1 block w-full rounded-md border-gray-300
                                 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                            <option value="full">Full</option>
-                            <option value="mask">Mask</option>
-                            <option value="off">Off</option>
+                            <option value="all">Показывать всем</option>
+                            <option value="my_referrals">Мои рефералы</option>
+                            <option value="no_refer">Не показывать рефералам</option>
                         </select>
+                    </div>
+
+                    <!-- Start at -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Таймер запуска</label>
+                        <input type="datetime-local" v-model="form.start_at"
+                               class="mt-1 block w-full rounded-md border-gray-300
+                               focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"/>
                     </div>
 
                     <!-- Actions -->
@@ -153,16 +160,16 @@ const form = useForm({
                         <button type="submit"
                                 class="rounded-md bg-indigo-600 px-4 py-2 text-white
                                        hover:bg-indigo-700">
-                            Save Visit
+                            Создать
                         </button>
-
                         <Link
-                            :href="route('cabinet.visits.index')"
+                            :href="route('quests.index')"
                             class="text-sm text-gray-600 hover:text-gray-900"
                         >
-                            Cancel
+                            Отмена
                         </Link>
                     </div>
+
                 </form>
             </div>
         </div>

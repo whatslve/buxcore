@@ -19,7 +19,7 @@ class QuestsController extends Controller
         ]);
     }
     public function create() {
-        return dd('test');
+        return Inertia::render('Quests/Create');
     }
     public function edit($id) {
         return dd('test');
