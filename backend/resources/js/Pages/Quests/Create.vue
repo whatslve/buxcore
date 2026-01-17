@@ -317,8 +317,6 @@ function btnClass(active) {
                     <Link :href="route('cabinet.quests.index')" class="btn-muted">Отмена</Link>
                 </div>
 
-                <!-- debug (удалить если не нужен) -->
-                <pre class="bg-gray-50 p-2 text-xs mt-2 overflow-auto">{{ form }}</pre>
             </form>
         </div>
     </DashboardLayout>

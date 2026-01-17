@@ -83,8 +83,8 @@ onMounted(() => {
             </button>
 
             <Link :href="route('dashboard')" class="flex items-center gap-2">
-                <span class="inline-flex h-8 w-8 items-center justify-center rounded bg-blue-600 text-white font-semibold">V</span>
-                <span class="font-semibold">Velonic</span>
+                <span class="inline-flex h-8 w-8 items-center justify-center rounded bg-blue-600 text-white font-semibold">BUXDEV</span>
+                <span class="font-semibold">Buxcore</span>
             </Link>
 
             <div class="flex items-center gap-2">
