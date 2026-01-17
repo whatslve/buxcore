@@ -1,4 +1,10 @@
 FROM php:8.3-fpm
+WORKDIR /var/www/backend
+ARG UID=1001
+ARG GID=1001
+
+RUN groupadd -g ${GID} appgroup \
+ && useradd -m -u ${UID} -g appgroup buxcore \
 
 # Зависимости
 RUN apt-get update && apt-get install -y \
@@ -14,6 +20,6 @@ RUN mkdir -p /var/www/backend \
     && chown -R www-data:www-data /var/www/backend
 
 USER www-data
-WORKDIR /var/www/backend
+
 
 CMD ["php-fpm"]
