@@ -5,6 +5,7 @@ import DashboardLayout from '@/Layouts/DashboardLayout.vue'
 import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 
+// Форма
 const form = useForm({
     name: '',
     type: '',
@@ -86,19 +87,20 @@ const completeInfoEditor = useEditor({
                                focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"/>
                     </div>
 
-                    <!-- Описание -->
+                    <!-- Описание (Tiptap) -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Описание</label>
-                        <EditorContent :editor="descriptionEditor" class="mt-1 border border-gray-300 rounded-md p-2 min-h-[150px]" />
+                        <EditorContent :editor="descriptionEditor"
+                                       class="mt-1 border border-gray-300 rounded-md p-2 min-h-[150px]" />
                     </div>
 
-                    <!-- Поле complete_info -->
+                    <!-- Инструкция для пользователя (Tiptap) -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Инструкция для пользователя</label>
-                        <EditorContent :editor="completeInfoEditor" class="mt-1 border border-gray-300 rounded-md p-2 min-h-[150px]" />
+                        <EditorContent :editor="completeInfoEditor"
+                                       class="mt-1 border border-gray-300 rounded-md p-2 min-h-[150px]" />
                     </div>
 
-                    <!-- Остальные поля остаются как есть -->
                     <!-- Check Type -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Тип проверки</label>
@@ -193,3 +195,10 @@ const completeInfoEditor = useEditor({
         </div>
     </DashboardLayout>
 </template>
+
+<style>
+.ProseMirror {
+    min-height: 150px;
+    outline: none;
+}
+</style>
