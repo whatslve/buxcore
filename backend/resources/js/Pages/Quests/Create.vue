@@ -2,6 +2,9 @@
 import { Head, Link, useForm } from '@inertiajs/vue3'
 import DashboardLayout from '@/Layouts/DashboardLayout.vue'
 
+import { useEditor, EditorContent } from '@tiptap/vue-3'
+import StarterKit from '@tiptap/starter-kit'
+
 const form = useForm({
     name: '',
     type: '',
@@ -26,6 +29,24 @@ const form = useForm({
 
     referral_filter: 'all',
     start_at: null,
+})
+
+// Tiptap редактор для description
+const descriptionEditor = useEditor({
+    extensions: [StarterKit],
+    content: form.description,
+    onUpdate: ({ editor }) => {
+        form.description = editor.getHTML()
+    }
+})
+
+// Tiptap редактор для complete_info
+const completeInfoEditor = useEditor({
+    extensions: [StarterKit],
+    content: form.complete_info,
+    onUpdate: ({ editor }) => {
+        form.complete_info = editor.getHTML()
+    }
 })
 </script>
 
@@ -68,19 +89,16 @@ const form = useForm({
                     <!-- Описание -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Описание</label>
-                        <textarea v-model="form.description" rows="3"
-                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm
-                                  focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+                        <EditorContent :editor="descriptionEditor" class="mt-1 border border-gray-300 rounded-md p-2 min-h-[150px]" />
                     </div>
 
                     <!-- Поле complete_info -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Инструкция для пользователя</label>
-                        <textarea v-model="form.complete_info" rows="3"
-                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm
-                                  focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+                        <EditorContent :editor="completeInfoEditor" class="mt-1 border border-gray-300 rounded-md p-2 min-h-[150px]" />
                     </div>
 
+                    <!-- Остальные поля остаются как есть -->
                     <!-- Check Type -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Тип проверки</label>
