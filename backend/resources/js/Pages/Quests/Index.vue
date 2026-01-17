@@ -12,7 +12,7 @@ defineProps({
     <DashboardLayout>
         <div class="mb-4 flex justify-between items-center">
             <h1 class="text-lg font-semibold">Задания</h1>
-            <Link :href="route('quests.create')"
+            <Link :href="route('cabinet.quests.create')"
                   class="inline-flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700">
                 Создать
             </Link>
@@ -44,7 +44,7 @@ defineProps({
                             {{ quest.payment?.user_payment ?? '—' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
-                            <Link :href="route('quests.edit', quest.id)"
+                            <Link :href="route('cabinet.quests.edit', quest.id)"
                                   class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700">
                                 Редактировать
                             </Link>
